@@ -7,8 +7,8 @@
   * 使用命令行 python weixin_xml.py 或 python weixin_xml.py online
   * 离线使用命令行 python weixin_xml.py offline
  
->python环境为2.7
->依赖插件：BeautifulSoup, json(详见"weixin_xml.py")
+>python环境为2.7，依赖插件：BeautifulSoup, json(详见"weixin_xml.py")
+
 
 #### 注:
   * getHTML函数：请求URL函数成功时打印"加入页面：url"
@@ -23,12 +23,8 @@
   * main函数：用来控制离线和在线的切换
 
 -------------------------------
-## 附录
 
-### 附录1：格式占位符
->如: 格式占位符
-
-## 主要得到的信息
+## 主要信息
 #### 微信号列表(dict)
   searchPage  
   name:        #微信名称  
@@ -146,3 +142,8 @@
   回调函数：无  
 
 -------------
+
+## 附录
+
+### 附录1：格式占位符
+>如: 格式占位符
