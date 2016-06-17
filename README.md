@@ -6,7 +6,7 @@
   * git clone https://github.com/buildlove/crawler.git
   * 使用命令行 python weixin_xml.py 或 python weixin_xml.py online
   * 离线使用命令行 python weixin_xml.py offline
- 
+
 >python环境为2.7，依赖插件：BeautifulSoup, json(详见"weixin_xml.py")
 
 
