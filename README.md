@@ -52,6 +52,7 @@
 ---------------
 ## 主要信息
 #### 微信号列表(dict)
+```
   searchPage
   name:        #微信名称
   number:      #微信号
@@ -60,8 +61,10 @@
   sptit:       #微信认证
   artSrc:      #微信最新文章链接
   artTit:      #微信最新文章标题
+```
 
 #### 文章列表(list)
+```
   articleList
   "title":         #文章标题
   "digest":
@@ -72,3 +75,4 @@
   "cover":
   "subtype":
   "is_multi":
+```
