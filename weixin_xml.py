@@ -1,14 +1,25 @@
 # -*-coding:utf8-*-
+__author__ = 'liyang'
+
 import re
 import os
 import urllib
 import json
 import sys
-import pymysql
+import unicodedata
+import time
+# import pymysql
+from lxml import etree
 from bs4 import BeautifulSoup
+reload(sys)
+sys.setdefaultencoding('utf-8')
+#创建空xml对象
+root = etree.Element("root")
+#设置时间格式
+ISOTIMEFORMAT="%Y-%m-%d %X"
 
-conn = pymysql.connect(host='127.0.0.1', port=3306, user='liyang', passwd='123456', db='mysql')
-cursor = conn.cursor()
+# conn = pymysql.connect(host='127.0.0.1', port=3306, user='liyang', passwd='123456', db='mysql')
+# cursor = conn.cursor()
 
 #请求地址，返回信息
 def getHTML(url):
@@ -52,14 +63,6 @@ def wrapPageNode(html):
   # searchPage["ico"] = results.span["ico-bg"]  #头像链接，存在在css文件中
   return searchPage
 
-def dict_to_list(d):
-    a = []
-    for key, value in d.iteritems():
-        if (type(value) is dict):
-            value = dict_to_list(value)
-        a.append([key, value])
-    return a
-
 #得到文章列表
 def getArticleTitle(html):
   articleList = []
@@ -67,7 +70,6 @@ def getArticleTitle(html):
   soup5 = soup.find_all('script')[5]
   reg = r"msgList = '(.*?)'"
   change = re.compile(reg)
-  # print str(soup5)
   lists = re.search(change, str(soup5)).group().replace(r"&amp;", '&')
   lists = lists.replace(r"msgList = ",' ',1)
   lists = lists.replace(r"&quot;", '"')
@@ -76,18 +78,17 @@ def getArticleTitle(html):
   lists = lists.replace(r'&gt;;', '>')
   lists = lists.replace(r'&lt;', '<')
   lists = lists.replace(r'&nbsp;', ' ')
-  writeFile(eval(lists),'./message/article.json')                                                  #
+  writeFile(eval(lists),'./message/article.json')
   encode_json = eval(lists)
-  decode_json = json.loads(encode_json)["list"]
-  # print type(decode_json)
-  for message in decode_json:
-    # print type(message)
-    if message.has_key("app_msg_ext_info"):
-      otherArticle = message["app_msg_ext_info"]["multi_app_msg_item_list"]
-      articleList.extend(otherArticle)
-      onlyArticle = message["app_msg_ext_info"].pop("multi_app_msg_item_list")
-      articleList.append(message["app_msg_ext_info"])
-  return articleList
+  if encode_json:
+    decode_json = json.loads(encode_json)["list"]
+    for message in decode_json:
+      if message.has_key("app_msg_ext_info"):
+        otherArticle = message["app_msg_ext_info"]["multi_app_msg_item_list"]
+        articleList.extend(otherArticle)
+        onlyArticle = message["app_msg_ext_info"].pop("multi_app_msg_item_list")
+        articleList.append(message["app_msg_ext_info"])
+    return articleList
 
 def console(arg):
   # 如果是list,遍历list,遍历的值再判断
@@ -102,6 +103,36 @@ def console(arg):
   else:
     print 'what is it?'
 
+# 减少重复代码(有待优化)
+def textToXml(tit, searchPage):
+  title = etree.SubElement(root, tit)
+  title.text = searchPage[tit]
+
+# 创建XML文件
+def createXML(searchPage, articleList):
+  start_xml = time.clock()
+  textToXml('Wname', searchPage)
+  textToXml('Wnumber', searchPage)
+  textToXml('artlink', searchPage)
+  textToXml('funcms', searchPage)
+  Path = os.getcwd() + '/xml/' + searchPage["Wnumber"] + '.xml'
+
+  for info in articleList:
+    textToXml('title', info)
+    content_url = etree.SubElement(root, "url")
+    content_url.text = "http://mp.weixin.qq.com" + info['content_url']
+    times = etree.SubElement(root, "data-time")
+    times.text = time.strftime( ISOTIMEFORMAT, time.localtime() )
+
+  xml = etree.tostring(root, pretty_print=True)
+
+  #写入xml文件
+  with open(Path, 'w') as el:
+    el.write(xml)
+  end_xml = time.clock()
+  print u"创建xml文件: %f s" % (end_xml - start_xml)
+
+#在线抓取
 def online():
   print u'在线抓取(online)'
   # 请求用户输入的微信号 1查找并输出微信号信息 2写入html文件（用于离线请求）
@@ -109,27 +140,36 @@ def online():
   funLink = "http://weixin.sogou.com/weixin?type=1&query=" + searchText
   html = getHTML(funLink)
   searchPage = wrapPageNode(html)
-  writeFile(html,'./message/search.html')                                                   #
-  # 请求文章在线地址 1输出文章详情数组 2写入html文件
-  getArticlePage = getHTML(searchPage["artlink"])
-  articleList = getArticleTitle(getArticlePage)
-  writeFile(getArticlePage,'./message/article.html')                                        #
+  if searchPage:
+    writeFile(html,'./message/search.html')                                                   #
+    # 请求文章在线地址 1输出文章详情数组 2写入html文件
+    getArticlePage = getHTML(searchPage["artlink"])
+    articleList = getArticleTitle(getArticlePage)
+    if articleList:
+      createXML(searchPage, articleList)
+      writeFile(getArticlePage,'./message/article.html')
+    else:
+      print u"解析json节点失败"
 
+#离线抓取
 def offline():
   print u'离线抓取(offline)'
   html = open("./message/search.html")
   searchPage = wrapPageNode(html)
-  console(searchPage)
-  #请求离线地址
-  articlePage = open('./message/article.html')
-  articleList = getArticleTitle(articlePage)
-  for tit in articleList:
-    print tit["title"]
-    # print tit["content_url"]
+  if searchPage:
+    #请求离线地址
+    articlePage = open('./message/article.html')
+    articleList = getArticleTitle(articlePage)
+    if articleList:
+      createXML(searchPage, articleList)
+
+    else:
+      print "检查文件/message/article.html是否存在"
+  else:
+    print "检查文件/message/search.html是否存在"
 
 def main():
   argv = sys.argv
-  print len(argv)
   if len(argv) >= 2:
     if argv[1] == 'offline':
       offline()
