@@ -53,26 +53,26 @@
 ## 主要信息
 #### 微信号列表(dict)
 ```
-  searchPage
-  name:        #微信名称
-  number:      #微信号
-  artlink:     #微信号文章页面链接
-  funcms:      #微信功能介绍
-  sptit:       #微信认证
-  artSrc:      #微信最新文章链接
-  artTit:      #微信最新文章标题
+  searchPage  
+  name:        #微信名称  
+  number:      #微信号  
+  artlink:     #微信号文章页面链接  
+  funcms:      #微信功能介绍  
+  sptit:       #微信认证  
+  artSrc:      #微信最新文章链接  
+  artTit:      #微信最新文章标题  
 ```
 
 #### 文章列表(list)
 ```
-  articleList
-  "title":         #文章标题
-  "digest":
-  "content":
-  "fileid":
-  "content_url"    #文章url
-  "source_url":
-  "cover":
-  "subtype":
-  "is_multi":
+  articleList  
+  "title":         #文章标题  
+  "digest":  
+  "content":  
+  "fileid":  
+  "content_url"    #文章 url  
+  "source_url":  
+  "cover":  
+  "subtype":  
+  "is_multi":  
 ```
