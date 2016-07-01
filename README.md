@@ -2,6 +2,9 @@
 
 版本 v0.0.2
 
+#### 简介
+  * 用于抓取微信公众号最新文章生成xml文件
+
 #### 使用
   * git clone https://github.com/buildlove/crawler.git
   * 使用命令行 python weixin_xml.py 或 python weixin_xml.py online
