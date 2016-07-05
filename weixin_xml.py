@@ -49,6 +49,7 @@ def parselink(node):
 
 # 用来获取搜狗搜索的第一个结果，实例化列表
 def wrapPageNode(html):
+  start_page = time.clock()
   searchPage = {}
   soup = BeautifulSoup(html, "html.parser")
   results = soup.find_all("div", class_="results mt7")[0]
@@ -61,16 +62,22 @@ def wrapPageNode(html):
   searchPage["artSrc"] = lowList[2].find_all("span","sp-txt")[0].a['href'] #微信最新文章链接
   searchPage["artTit"] = lowList[2].find_all("span","sp-txt")[0].a.string #微信最新文章
   # searchPage["ico"] = results.span["ico-bg"]  #头像链接，存在在css文件中
+  end_page = time.clock()
+  print u"实例化列表成功: %f s" % (end_page - start_page)
   return searchPage
 
 #得到文章列表
 def getArticleTitle(html):
+  if not html: print "页面不存在"
+  start_art = time.clock()
   articleList = []
   soup = BeautifulSoup(html, "html.parser")
-  soup5 = soup.find_all('script')[5]
+  soup6 = soup.find_all('script')[6]
+  # print soup6
   reg = r"msgList = '(.*?)'"
   change = re.compile(reg)
-  lists = re.search(change, str(soup5)).group().replace(r"&amp;", '&')
+  lists = re.search(change, str(soup6)).group()
+  lists = lists.replace(r"&amp;", '&')
   lists = lists.replace(r"msgList = ",' ',1)
   lists = lists.replace(r"&quot;", '"')
   lists = lists.replace(r"&amp;", '&')
@@ -88,20 +95,9 @@ def getArticleTitle(html):
         articleList.extend(otherArticle)
         onlyArticle = message["app_msg_ext_info"].pop("multi_app_msg_item_list")
         articleList.append(message["app_msg_ext_info"])
+    end_art = time.clock()
+    print u"得到文章列表: %f s" % (end_art - start_art)
     return articleList
-
-def console(arg):
-  # 如果是list,遍历list,遍历的值再判断
-  if isinstance(arg, list):
-    for i in arg:
-      console(i)
-  # 如果是dict,遍历dict,打印dict键值对
-  elif isinstance(arg, dict):
-    for x in arg:
-      if x:
-        print x + ' ' +arg[x]
-  else:
-    print 'what is it?'
 
 # 减少重复代码(有待优化)
 def textToXml(tit, searchPage):
@@ -141,7 +137,7 @@ def online():
   html = getHTML(funLink)
   searchPage = wrapPageNode(html)
   if searchPage:
-    writeFile(html,'./message/search.html')                                                   #
+    writeFile(html,'./message/search.html')
     # 请求文章在线地址 1输出文章详情数组 2写入html文件
     getArticlePage = getHTML(searchPage["artlink"])
     articleList = getArticleTitle(getArticlePage)
